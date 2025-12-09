@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Diamante Azul</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../../static/css/styles.css" rel="stylesheet">
+    <style>
+        /* Estilos específicos para la barra lateral y las tarjetas de estadísticas */
+        .dashboard-sidebar {
+            background: linear-gradient(180deg, #f8f9fc 0%, #e9ecef 100%);
+            border-right: 1px solid #e3e6f0;
+            min-height: calc(100vh - 56px);
+            position: relative;
+        }
+
+        [data-theme="dark"] .dashboard-sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .dashboard-sidebar .nav-link {
+            color: var(--dark-color);
+            padding: 0.875rem 1.25rem;
+            margin: 0.125rem 0.75rem;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Efecto de hover y activo */
+        .dashboard-sidebar .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: var(--transition);
+            z-index: -1;
+        }
+
+        .dashboard-sidebar .nav-link:hover::before,
+        .dashboard-sidebar .nav-link.active::before {
+            left: 0;
+        }
+
+        .dashboard-sidebar .nav-link:hover,
+        .dashboard-sidebar .nav-link.active {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        /* Ocultar/Mostrar contenido */
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilos de tarjetas de estadísticas */
+        .stats-card {
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-color) 100%);
+            border-left: 4px solid;
+        }
+        .stats-card.primary { border-left-color: var(--primary-color); }
+        .stats-card.success { border-left-color: var(--success-color); }
+        .stats-card.warning { border-left-color: var(--warning-color); }
+        .stats-card.info { border-left-color: var(--info-color); }
+        .stats-card.danger { border-left-color: var(--danger-color); }
+
+        [data-theme="dark"] .stats-card {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+        }
+    </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle">
+    <i class="fas fa-moon" id="themeIcon"></i>
+</button>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="index.php">
+            <i class="fas fa-gem me-2"></i>Diamante Azul
+        </a>
+
+        <div class="navbar-nav ms-auto">
+            <div class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-user me-1"></i><?php echo htmlspecialchars($_SESSION['nombre_usuario'] ?? 'Usuario'); ?>
+                    <span class="badge bg-secondary ms-1"><?php echo htmlspecialchars($rol ?? 'Cliente'); ?></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="index.php"><i class="fas fa-home me-2"></i>Inicio</a></li>
+                    <li><a class="dropdown-item" href="perfil.php"><i class="fas fa-user-cog me-2"></i>Mi Perfil</a></li>
+                    <?php if (($id_rol ?? 3) == 3): ?>
+                    <li><a class="dropdown-item" href="cuotas.php"><i class="fas fa-credit-card me-2"></i>Mis Cuotas</a></li>
+                    <?php endif; ?>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<?php if (!empty($message)): ?>
+<div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show m-3" role="alert">
+    <i class="fas fa-<?php echo $messageType == 'success' ? 'check-circle' : 'exclamation-triangle'; ?> me-2"></i>
+    <?php echo htmlspecialchars($message); ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<?php endif; ?>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-3 col-lg-2 d-md-block dashboard-sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.php?section=dashboard">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+
+                    <?php if (($id_rol ?? 3) <= 2): // Administrador y Empleado ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php?section=productos">
+                            <i class="fas fa-box me-2"></i>Productos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php?section=empenos">
+                            <i class="fas fa-handshake me-2"></i>Empeños
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php?section=cuotas-admin">
+                            <i class="fas fa-credit-card me-2"></i>Gestión Cuotas
+                        </a>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php if (($id_rol ?? 3) == 1): // Solo Administrador ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php?section=usuarios">
+                            <i class="fas fa-users me-2"></i>Usuarios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php?section=roles">
+                            <i class="fas fa-user-tag me-2"></i>Roles
+                        </a>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php if (($id_rol ?? 3) == 3): // Solo Cliente ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="cuotas.php">
+                            <i class="fas fa-credit-card me-2"></i>Mis Cuotas
+                        </a>
+                    </li>
+                    <?php endif; ?>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="perfil.php">
+                            <i class="fas fa-user-cog me-2"></i>Mi Perfil
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-tachometer-alt me-2 text-primary"></i>
+                    Dashboard
+                </h1>
+            </div>
+
+            <div id="dashboard-section" class="content-section active">
+                <div class="row mb-4">
+                    <?php if (($id_rol ?? 3) <= 2): ?>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card stats-card primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">Productos</div>
+                                        <div class="h5 mb-0 fw-bold"><?php echo $stats['productos'] ?? 0; ?></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-box fa-2x text-primary opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card stats-card success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs fw-bold text-success text-uppercase mb-1">Ventas Hoy</div>
+                                        <div class="h5 mb-0 fw-bold">$<?php echo number_format($stats['ventas_hoy'] ?? 0, 0); ?></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-dollar-sign fa-2x text-success opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card stats-card warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs fw-bold text-warning text-uppercase mb-1">Ventas Mes</div>
+                                        <div class="h5 mb-0 fw-bold">$<?php echo number_format($stats['ventas_mes'] ?? 0, 0); ?></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-chart-line fa-2x text-warning opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if (($id_rol ?? 3) == 1): ?>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card stats-card info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs fw-bold text-info text-uppercase mb-1">Usuarios Activos</div>
+                                        <div class="h5 mb-0 fw-bold"><?php echo $stats['usuarios'] ?? 0; ?></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-users fa-2x text-info opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if (($id_rol ?? 3) == 3): ?>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card stats-card danger shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs fw-bold text-danger text-uppercase mb-1">Cuotas Pendientes</div>
+                                        <div class="h5 mb-0 fw-bold"><?php echo $stats['cuotas_pendientes'] ?? 0; ?></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-credit-card fa-2x text-danger opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card shadow">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 fw-bold text-primary">
+                                    <i class="fas fa-bolt me-2"></i>Accesos Rápidos
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <?php if (($id_rol ?? 3) <= 2): ?>
+                                    <div class="col-md-3 mb-3">
+                                        <button class="btn btn-primary w-100" onclick="showSection('productos')">
+                                            <i class="fas fa-plus-circle mb-2 d-block"></i>
+                                            Gestionar Productos
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <button class="btn btn-success w-100" onclick="showSection('ventas')">
+                                            <i class="fas fa-cash-register mb-2 d-block"></i>
+                                            Gestionar Ventas
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <button class="btn btn-warning w-100" onclick="showSection('cuotas-admin')">
+                                            <i class="fas fa-credit-card mb-2 d-block"></i>
+                                            Gestionar Cuotas
+                                        </button>
+                                    </div>
+                                    <?php endif; ?>
+                                    <?php if (($id_rol ?? 3) == 1): ?>
+                                    <div class="col-md-3 mb-3">
+                                        <button class="btn btn-info w-100" onclick="showSection('usuarios')">
+                                            <i class="fas fa-user-plus mb-2 d-block"></i>
+                                            Gestionar Usuarios
+                                        </button>
+                                    </div>
+                                    <?php endif; ?>
+                                    <?php if (($id_rol ?? 3) == 3): ?>
+                                    <div class="col-md-4 mb-3">
+                                        <a href="cuotas.php" class="btn btn-primary w-100">
+                                            <i class="fas fa-credit-card mb-2 d-block"></i>
+                                            Ver Mis Cuotas
+                                        </a>
+                                    </div>
+                                    <?php endif; ?>
+                                    <div class="col-md-3 mb-3">
+                                        <a href="perfil.php" class="btn btn-secondary w-100">
+                                            <i class="fas fa-user-edit mb-2 d-block"></i>
+                                            Editar Perfil
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 fw-bold text-primary">
+                                    <i class="fas fa-user me-2"></i>Información de la Sesión
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Usuario:</strong> <?php echo htmlspecialchars($_SESSION['nombre_usuario'] ?? 'No disponible'); ?></p>
+                                <p><strong>Rol:</strong> <?php echo htmlspecialchars($rol ?? 'Cliente'); ?></p>
+                                <p><strong>Email:</strong> <?php echo htmlspecialchars($usuario_actual['email_usuario'] ?? 'No especificado'); ?></p>
+                                <p><strong>Última conexión:</strong> <?php echo date('d/m/Y H:i:s'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <?php include 'includes/sections.php'; ?>
+        </main>
+    </div>
+</div>
+
+<?php include 'includes/modales.php'; ?>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../static/js/main.js"></script>
+<script src="../../static/js/dashboard.js"></script>
+</body>
+</html>

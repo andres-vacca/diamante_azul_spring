@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Cliente - Diamante Azul</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-theme.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/auth-enhanced.css}">
+</head>
+<body class="dashboard" data-theme="light">
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon" id="themeIcon"></i>
+    </button>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-info">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="fas fa-gem me-2"></i>Diamante Azul - Cliente
+            </a>
+
+            <div class="navbar-nav ms-auto d-flex flex-row align-items-center">
+                <!-- Indicador de Sesión -->
+                <div class="session-info me-3"></div>
+                
+                <!-- Dropdown de Usuario -->
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        <div class="user-avatar me-2" style="background-color: #0dcaf0;">
+                            <span th:text="${usuario_nombre != null ? usuario_nombre.substring(0,1).toUpperCase() : 'C'}">C</span>
+                        </div>
+                        <div class="user-details text-start">
+                            <div class="user-indicator" th:text="${usuario_nombre}">Cliente</div>
+                            <small class="text-light opacity-75" th:text="${usuario_rol}">Cliente</small>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li class="dropdown-header">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user me-2 text-info"></i>
+                                <div>
+                                    <div class="fw-bold" th:text="${usuario_nombre}">Cliente</div>
+                                    <small class="text-muted" th:text="${usuario_email}"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0a6966636f647e6f4a6e636b676b647e6f6b707f6624696567">[email&#160;protected]</a></small>
+                                </div>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog me-2"></i>Mi Perfil</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-history me-2"></i>Historial</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger logout-btn" href="/logout">
+                                <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mensajes de Estado -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show m-3" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block dashboard-sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#dashboard" data-section="dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>Mi Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#empenos" data-section="empenos">
+                                <i class="fas fa-handshake me-2"></i>Mis Empeños
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#cuotas" data-section="cuotas">
+                                <i class="fas fa-credit-card me-2"></i>Mis Cuotas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#historial" data-section="historial">
+                                <i class="fas fa-history me-2"></i>Historial
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#perfil" data-section="perfil">
+                                <i class="fas fa-user-cog me-2"></i>Mi Perfil
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Información de Seguridad -->
+                    <div class="mt-4 p-3 bg-light rounded" data-theme-target="bg-dark">
+                        <h6 class="text-info"><i class="fas fa-shield-alt me-2"></i>Seguridad</h6>
+                        <div class="auth-status authenticated">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Sesión Segura</span>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-clock me-1"></i>
+                            Última actividad: <span id="last-activity">Ahora</span>
+                        </small>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <!-- Dashboard Header -->
+                <div class="dashboard-header">
+                    <div>
+                        <h1 class="h2">
+                            <i class="fas fa-tachometer-alt me-2 text-info"></i>
+                            Mi Dashboard
+                        </h1>
+                        <p class="text-muted">Bienvenido a tu panel personal</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-info btn-sm" onclick="refreshDashboard()">
+                            <i class="fas fa-sync-alt me-1"></i>Actualizar
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm logout-btn">
+                            <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="content-section active">
+                    <!-- Estadísticas del Cliente -->
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card stats-card info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Mis Empeños</div>
+                                            <div class="h5 mb-0 fw-bold counter" th:text="${totalEmpenos ?: 0}">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-handshake fa-2x text-info opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card stats-card success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Cuotas Pagadas</div>
+                                            <div class="h5 mb-0 fw-bold counter" th:text="${cuotasPagadas ?: 0}">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-check-circle fa-2x text-success opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card stats-card warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Cuotas Pendientes</div>
+                                            <div class="h5 mb-0 fw-bold counter" th:text="${cuotasPendientes ?: 0}">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-clock fa-2x text-warning opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card stats-card primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Cuotas</div>
+                                            <div class="h5 mb-0 fw-bold counter" th:text="${totalCuotas ?: 0}">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-credit-card fa-2x text-primary opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Accesos Rápidos -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card shadow">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 fw-bold text-info">
+                                        <i class="fas fa-bolt me-2"></i>Accesos Rápidos
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <button class="btn btn-info w-100" onclick="showSection('empenos')">
+                                                <i class="fas fa-handshake mb-2 d-block"></i>
+                                                Ver Mis Empeños
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <button class="btn btn-warning w-100" onclick="showSection('cuotas')">
+                                                <i class="fas fa-credit-card mb-2 d-block"></i>
+                                                Mis Cuotas
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <button class="btn btn-success w-100" onclick="showSection('historial')">
+                                                <i class="fas fa-history mb-2 d-block"></i>
+                                                Ver Historial
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <button class="btn btn-primary w-100" onclick="showSection('perfil')">
+                                                <i class="fas fa-user-edit mb-2 d-block"></i>
+                                                Editar Perfil
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información Personal -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card shadow">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 fw-bold text-info">
+                                        <i class="fas fa-bell me-2"></i>Notificaciones Importantes
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div th:if="${cuotasPendientes > 0}" class="alert alert-warning" role="alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Tienes <strong th:text="${cuotasPendientes}">0</strong> cuota(s) pendiente(s) de pago.
+                                        <a href="#" onclick="showSection('cuotas')" class="alert-link">Ver detalles</a>
+                                    </div>
+                                    
+                                    <div th:if="${cuotasPendientes == 0}" class="alert alert-success" role="alert">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        ¡Excelente! No tienes cuotas pendientes.
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <h6>Próximos Vencimientos:</h6>
+                                        <div class="list-group list-group-flush">
+                                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="fas fa-calendar-alt text-info me-2"></i>
+                                                    Cuota Empeño #001
+                                                </div>
+                                                <small class="text-muted">15 Dic 2024</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card shadow">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 fw-bold text-info">
+                                        <i class="fas fa-user me-2"></i>Mi Información
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center mb-3">
+                                        <div class="user-avatar mx-auto" style="width: 60px; height: 60px; font-size: 1.5rem; background-color: #0dcaf0;">
+                                            <span th:text="${usuario_nombre != null ? usuario_nombre.substring(0,1).toUpperCase() : 'C'}">C</span>
+                                        </div>
+                                        <h5 class="mt-2 mb-0" th:text="${usuario_nombre}">Cliente</h5>
+                                        <small class="text-muted" th:text="${usuario_email}"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="03606f6a666d776643676a626e626d77666279766f2d606c6e">[email&#160;protected]</a></small>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <p><strong>Estado:</strong> <span class="badge bg-success">Activo</span></p>
+                                    <p><strong>Sesión iniciada:</strong> <span id="session-time">Ahora</span></p>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="showSection('perfil')">
+                                            <i class="fas fa-edit me-2"></i>Editar Perfil
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm logout-btn">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Otras secciones -->
+                <div id="empenos-section" class="content-section">
+                    <h3><i class="fas fa-handshake me-2"></i>Mis Empeños</h3>
+                    <p>Aquí se mostrarían los empeños del cliente...</p>
+                </div>
+
+                <div id="cuotas-section" class="content-section">
+                    <h3><i class="fas fa-credit-card me-2"></i>Mis Cuotas</h3>
+                    <p>Aquí se mostrarían las cuotas del cliente...</p>
+                </div>
+
+                <div id="historial-section" class="content-section">
+                    <h3><i class="fas fa-history me-2"></i>Historial</h3>
+                    <p>Aquí se mostraría el historial del cliente...</p>
+                </div>
+
+                <div id="perfil-section" class="content-section">
+                    <h3><i class="fas fa-user-cog me-2"></i>Mi Perfil</h3>
+                    <p>Aquí se mostraría el perfil del cliente...</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/dashboard.js}"></script>
+    <script th:src="@{/js/auth.js}"></script>
+    
+    <script>
+        // Inicializar dashboard cliente
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSessionTime();
+            setInterval(updateSessionTime, 60000);
+            updateLastActivity();
+        });
+        
+        function updateSessionTime() {
+            const sessionTimeElement = document.getElementById('session-time');
+            if (sessionTimeElement) {
+                const now = new Date();
+                sessionTimeElement.textContent = now.toLocaleTimeString('es-CO');
+            }
+        }
+        
+        function updateLastActivity() {
+            const lastActivityElement = document.getElementById('last-activity');
+            if (lastActivityElement) {
+                const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+                events.forEach(event => {
+                    document.addEventListener(event, () => {
+                        lastActivityElement.textContent = 'Ahora';
+                    });
+                });
+            }
+        }
+    </script>
+</body>
+</html>

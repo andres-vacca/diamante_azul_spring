@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Diamante Azul</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link th:href="@{/css/dashboard.css}" rel="stylesheet">
+</head>
+<body>
+    <!-- Botón de cambio de tema -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon" id="themeIcon"></i>
+    </button>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" th:href="@{/dashboard}">
+                <i class="fas fa-gem me-2"></i>Diamante Azul
+            </a>
+            
+            <button class="navbar-toggler d-lg-none" type="button" id="sidebarToggle">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span th:text="${usuario_nombre} ?: 'Usuario'">Usuario</span>
+                        <span class="badge bg-light text-dark ms-2" th:text="${usuario_rol}">Rol</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" th:href="@{/perfil}"><i class="fas fa-user me-2"></i>Mi Perfil</a></li>
+                        <li><a class="dropdown-item" th:href="@{/configuracion}"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/logout}"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" id="sidebar">
+                <div class="position-sticky pt-3">
+                    <div class="sidebar-header text-center mb-4">
+                        <h5 class="text-white mb-1">
+                            <i class="fas fa-gem me-2"></i>Panel de Control
+                        </h5>
+                        <p class="text-white-50 small mb-0" th:text="${usuario_rol}">Rol</p>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" data-section="dashboard" onclick="showSection('dashboard')">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        
+                        <!-- Solo Administrador puede ver Usuarios -->
+                        <li class="nav-item" th:if="${usuario_rol == 'Administrador'}">
+                            <a class="nav-link" href="#" data-section="usuarios" onclick="showSection('usuarios')">
+                                <i class="fas fa-users me-2"></i>Usuarios
+                            </a>
+                        </li>
+                        
+                        <!-- Empleados - Solo Administrador -->
+                        <li class="nav-item" th:if="${usuario_rol == 'Administrador'}">
+                            <a class="nav-link" href="#" data-section="empleados" onclick="showSection('empleados')">
+                                <i class="fas fa-user-tie me-2"></i>Empleados
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="clientes" onclick="showSection('clientes')">
+                                <i class="fas fa-user-friends me-2"></i>Clientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="productos" onclick="showSection('productos')">
+                                <i class="fas fa-box me-2"></i>Productos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="empenos" onclick="showSection('empenos')">
+                                <i class="fas fa-handshake me-2"></i>Empeños
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="cuotas" onclick="showSection('cuotas')">
+                                <i class="fas fa-credit-card me-2"></i>Cuotas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="seguimiento" onclick="showSection('seguimiento')">
+                                <i class="fas fa-chart-line me-2"></i>Seguimiento Cuotas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="reportes" onclick="showSection('reportes')">
+                                <i class="fas fa-chart-bar me-2"></i>Reportes
+                            </a>
+                        </li>
+                        
+                        <!-- Solo Administrador puede ver Configuración -->
+                        <li class="nav-item" th:if="${usuario_rol == 'Administrador'}">
+                            <a class="nav-link" href="#" data-section="configuracion" onclick="showSection('configuracion')">
+                                <i class="fas fa-cog me-2"></i>Configuración
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="content-section active">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <div>
+                            <h1 class="h2 text-gradient">Dashboard Principal</h1>
+                            <p class="text-muted mb-0">
+                                Bienvenido, <span th:text="${usuario_nombre}">Usuario</span>
+                                <span class="badge bg-primary ms-2" th:text="${usuario_rol}">Rol</span>
+                            </p>
+                        </div>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.reload()">
+                                    <i class="fas fa-sync-alt me-1"></i>Actualizar
+                                </button>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="window.print()">
+                                    <i class="fas fa-download me-1"></i>Exportar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="row g-4 mb-4">
+                        <!-- Solo Administrador ve Usuarios -->
+                        <div class="col-xl-2 col-md-4" th:if="${usuario_rol == 'Administrador'}">
+                            <div class="card stats-card primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Usuarios</div>
+                                            <div class="h5 mb-0 fw-bold counter" data-target="15">15</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-users fa-2x text-primary opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Solo Administrador ve Empleados -->
+                        <div class="col-xl-2 col-md-4" th:if="${usuario_rol == 'Administrador'}">
+                            <div class="card stats-card info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Empleados</div>
+                                            <div class="h5 mb-0 fw-bold counter" data-target="8">8</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-user-tie fa-2x text-info opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4">
+                            <div class="card stats-card success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Clientes</div>
+                                            <div class="h5 mb-0 fw-bold counter" data-target="89">89</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-user-friends fa-2x text-success opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4">
+                            <div class="card stats-card warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs fw-bold text-secondary text-uppercase mb-1">Productos</div>
+                                            <div class="h5 mb-0 fw-bold counter" data-target="245">245</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-box fa-2x text-secondary opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4">
+                            <div class="card stats-card warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Empeños</div>
+                                            <div class="h5 mb-0 fw-bold counter" data-target="67">67</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-handshake fa-2x text-warning opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4">
+                            <div class="card stats-card danger shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs fw-bold text-danger text-uppercase mb-1">Cuotas Vencidas</div>
+                                            <div class="h5 mb-0 fw-bold counter" data-target="12">12</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-exclamation-triangle fa-2x text-danger opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card shadow">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 fw-bold text-primary">
+                                        <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <!-- Solo Administrador puede crear usuarios -->
+                                        <div class="col-lg-2 col-md-4" th:if="${usuario_rol == 'Administrador'}">
+                                            <button class="btn btn-primary w-100 py-3" onclick="showSection('usuarios', 'crear')">
+                                                <i class="fas fa-user-plus mb-2 d-block fs-3"></i>
+                                                <span class="d-block">Nuevo Usuario</span>
+                                            </button>
+                                        </div>
+                                        <!-- Solo Administrador puede crear empleados -->
+                                        <div class="col-lg-2 col-md-4" th:if="${usuario_rol == 'Administrador'}">
+                                            <button class="btn btn-info w-100 py-3" onclick="showSection('empleados', 'crear')">
+                                                <i class="fas fa-user-tie mb-2 d-block fs-3"></i>
+                                                <span class="d-block">Nuevo Empleado</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-lg-2 col-md-4">
+                                            <button class="btn btn-success w-100 py-3" onclick="showSection('clientes', 'crear')">
+                                                <i class="fas fa-user-friends mb-2 d-block fs-3"></i>
+                                                <span class="d-block">Nuevo Cliente</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-lg-2 col-md-4">
+                                            <button class="btn btn-secondary w-100 py-3" onclick="showSection('productos', 'crear')">
+                                                <i class="fas fa-box mb-2 d-block fs-3"></i>
+                                                <span class="d-block">Nuevo Producto</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-lg-2 col-md-4">
+                                            <button class="btn btn-warning w-100 py-3" onclick="showSection('empenos', 'crear')">
+                                                <i class="fas fa-handshake mb-2 d-block fs-3"></i>
+                                                <span class="d-block">Nuevo Empeño</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-lg-2 col-md-4">
+                                            <button class="btn btn-outline-primary w-100 py-3" onclick="showSection('cuotas', 'crear')">
+                                                <i class="fas fa-credit-card mb-2 d-block fs-3"></i>
+                                                <span class="d-block">Nueva Cuota</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seguimiento de Cuotas -->
+                    <div class="row mb-4">
+                        <div class="col-lg-8">
+                            <div class="card shadow">
+                                <div class="card-header bg-warning text-dark py-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="m-0 fw-bold">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>Seguimiento de Cuotas e Intereses
+                                        </h6>
+                                        <button class="btn btn-outline-dark btn-sm" onclick="showSection('seguimiento')">
+                                            <i class="fas fa-chart-line me-1"></i>Ver Completo
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <div class="bg-danger rounded-circle p-3">
+                                                        <i class="fas fa-exclamation-triangle text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-0">Cuotas Vencidas</h6>
+                                                    <h4 class="text-danger mb-0">12</h4>
+                                                    <small class="text-muted">Requieren atención inmediata</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <div class="bg-warning rounded-circle p-3">
+                                                        <i class="fas fa-clock text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-0">Próximas a Vencer</h6>
+                                                    <h4 class="text-warning mb-0">8</h4>
+                                                    <small class="text-muted">En los próximos 7 días</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <div class="bg-success rounded-circle p-3">
+                                                        <i class="fas fa-check-circle text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-0">Pagadas Este Mes</h6>
+                                                    <h4 class="text-success mb-0">45</h4>
+                                                    <small class="text-muted">$2,450,000 recaudados</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card shadow">
+                                <div class="card-header bg-info text-white py-3">
+                                    <h6 class="m-0 fw-bold">
+                                        <i class="fas fa-chart-pie me-2"></i>Resumen Financiero
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Intereses Generados</span>
+                                            <strong class="text-success">$850,000</strong>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 6px;">
+                                            <div class="progress-bar bg-success" style="width: 85%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Capital en Empeños</span>
+                                            <strong class="text-primary">$5,200,000</strong>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 6px;">
+                                            <div class="progress-bar bg-primary" style="width: 65%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-0">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Mora Acumulada</span>
+                                            <strong class="text-danger">$125,000</strong>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 6px;">
+                                            <div class="progress-bar bg-danger" style="width: 15%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secciones dinámicas para cada módulo -->
+                <div id="usuarios-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-users me-2 text-primary"></i>Gestión de Usuarios</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <a th:href="@{/usuarios/crear}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-1"></i>Nuevo Usuario
+                                </a>
+                                <a th:href="@{/usuarios/lista}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-list me-1"></i>Ver Lista Completa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="text-muted">Gestione los usuarios del sistema desde aquí. Puede crear nuevos usuarios, editar información existente y administrar permisos.</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <a th:href="@{/usuarios/crear}" class="btn btn-primary w-100">
+                                        <i class="fas fa-user-plus me-2"></i>Crear Nuevo Usuario
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a th:href="@{/usuarios/lista}" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-list me-2"></i>Ver Todos los Usuarios
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="empleados-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-user-tie me-2 text-info"></i>Gestión de Empleados</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <a th:href="@{/empleados/crear}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-plus me-1"></i>Nuevo Empleado
+                                </a>
+                                <a th:href="@{/empleados/lista}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-list me-1"></i>Ver Lista Completa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="text-muted">Administre la información de los empleados de la empresa.</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <a th:href="@{/empleados/crear}" class="btn btn-info w-100">
+                                        <i class="fas fa-user-tie me-2"></i>Registrar Nuevo Empleado
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a th:href="@{/empleados/lista}" class="btn btn-outline-info w-100">
+                                        <i class="fas fa-list me-2"></i>Ver Todos los Empleados
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="clientes-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-user-friends me-2 text-success"></i>Gestión de Clientes</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <a th:href="@{/clientes/crear}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-plus me-1"></i>Nuevo Cliente
+                                </a>
+                                <a th:href="@{/clientes/lista}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-list me-1"></i>Ver Lista Completa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="text-muted">Gestione la información de los clientes y su historial de transacciones.</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <a th:href="@{/clientes/crear}" class="btn btn-success w-100">
+                                        <i class="fas fa-user-friends me-2"></i>Registrar Nuevo Cliente
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a th:href="@{/clientes/lista}" class="btn btn-outline-success w-100">
+                                        <i class="fas fa-list me-2"></i>Ver Todos los Clientes
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="productos-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-box me-2 text-secondary"></i>Gestión de Productos</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <a th:href="@{/productos/crear}" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-plus me-1"></i>Nuevo Producto
+                                </a>
+                                <a th:href="@{/productos/lista}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-list me-1"></i>Ver Lista Completa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="text-muted">Administre el inventario de productos disponibles para empeño y venta.</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <a th:href="@{/productos/crear}" class="btn btn-secondary w-100">
+                                        <i class="fas fa-box me-2"></i>Registrar Nuevo Producto
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a th:href="@{/productos/lista}" class="btn btn-outline-secondary w-100">
+                                        <i class="fas fa-list me-2"></i>Ver Todos los Productos
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="empenos-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-handshake me-2 text-warning"></i>Gestión de Empeños</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <a th:href="@{/empenos/crear}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-plus me-1"></i>Nuevo Empeño
+                                </a>
+                                <a th:href="@{/empenos/lista}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-list me-1"></i>Ver Lista Completa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="text-muted">Gestione los empeños activos, renovaciones y pagos.</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <a th:href="@{/empenos/crear}" class="btn btn-warning w-100">
+                                        <i class="fas fa-handshake me-2"></i>Registrar Nuevo Empeño
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a th:href="@{/empenos/lista}" class="btn btn-outline-warning w-100">
+                                        <i class="fas fa-list me-2"></i>Ver Todos los Empeños
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="cuotas-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-credit-card me-2 text-primary"></i>Gestión de Cuotas</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <a th:href="@{/cuotas/crear}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-1"></i>Nueva Cuota
+                                </a>
+                                <a th:href="@{/cuotas/lista}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-list me-1"></i>Ver Lista Completa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="text-muted">Administre las cuotas de pago y su seguimiento.</p>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <a th:href="@{/cuotas/crear}" class="btn btn-primary w-100">
+                                        <i class="fas fa-credit-card me-2"></i>Registrar Nueva Cuota
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a th:href="@{/cuotas/lista}" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-list me-2"></i>Ver Todas las Cuotas
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a th:href="@{/cuotas/seguimiento}" class="btn btn-outline-warning w-100">
+                                        <i class="fas fa-chart-line me-2"></i>Seguimiento
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="seguimiento-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-chart-line me-2 text-warning"></i>Seguimiento de Cuotas</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <a th:href="@{/cuotas/seguimiento}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-chart-line me-1"></i>Ver Seguimiento Completo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="text-muted">Monitoree el estado de las cuotas, intereses y pagos pendientes.</p>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <a th:href="@{/cuotas/seguimiento}" class="btn btn-warning w-100">
+                                        <i class="fas fa-chart-line me-2"></i>Ir al Seguimiento Completo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reportes-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-chart-bar me-2 text-info"></i>Reportes</h1>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="text-muted">Genere y consulte reportes del sistema.</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <button class="btn btn-info w-100" onclick="generateReport('ventas')">
+                                        <i class="fas fa-chart-bar me-2"></i>Reporte de Ventas
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn btn-outline-info w-100" onclick="generateReport('clientes')">
+                                        <i class="fas fa-users me-2"></i>Reporte de Clientes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="configuracion-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-cog me-2 text-secondary"></i>Configuración</h1>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="text-muted">Configure los parámetros del sistema.</p>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <a th:href="@{/configuracion}" class="btn btn-secondary w-100">
+                                        <i class="fas fa-cog me-2"></i>Ir a Configuración
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/dashboard.js}"></script>
+    
+    <script>
+        // Variables de Thymeleaf para JavaScript
+        const userRole = /*[[${usuario_rol}]]*/ 'Empleado';
+        const userRoleId = /*[[${usuario_rol_id}]]*/ 2;
+        
+        // Función para mostrar secciones
+        function showSection(sectionName, action = null) {
+            // Ocultar todas las secciones
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+                section.classList.remove('active');
+            });
+            
+            // Mostrar la sección seleccionada
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                targetSection.classList.add('active', 'fade-in');
+            }
+            
+            // Actualizar navegación activa
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-section') === sectionName) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Si hay una acción específica, redirigir
+            if (action === 'crear') {
+                setTimeout(() => {
+                    window.location.href = `/${sectionName}/crear`;
+                }, 300);
+            }
+        }
+        
+        // Función para generar reportes
+        function generateReport(type) {
+            showNotification(`Generando reporte de ${type}...`, 'info');
+            // Aquí iría la lógica para generar reportes
+        }
+        
+        // Toggle sidebar en móvil
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
+        });
+        
+        // Animación de contadores
+        function animateCounters() {
+            const counters = document.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                let count = 0;
+                const increment = target / 100;
+                
+                const updateCounter = () => {
+                    if (count < target) {
+                        count += increment;
+                        counter.textContent = Math.ceil(count);
+                        setTimeout(updateCounter, 20);
+                    } else {
+                        counter.textContent = target;
+                    }
+                };
+                updateCounter();
+            });
+        }
+        
+        // Ejecutar animación al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(animateCounters, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento de Cuotas e Intereses - Diamante Azul</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/dark-theme.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body data-theme="dark">
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-1 text-gradient">
+                            <i class="fas fa-chart-line me-2"></i>Seguimiento de Cuotas e Intereses
+                        </h1>
+                        <p class="text-muted mb-0">Monitoreo y control de pagos y vencimientos</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="window.location.reload()">
+                            <i class="fas fa-sync-alt me-1"></i>Actualizar
+                        </button>
+                        <a href="/dashboard" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-start border-primary border-4 h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Total Cuotas
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${totalCuotas}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-list fa-2x text-primary opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-start border-warning border-4 h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Cuotas Pendientes
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${totalPendientes}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clock fa-2x text-warning opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-start border-danger border-4 h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                    Cuotas Vencidas
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${totalVencidas}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-exclamation-triangle fa-2x text-danger opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-start border-success border-4 h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Cuotas Pagadas
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${totalPagadas}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-check-circle fa-2x text-success opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="m-0 font-weight-bold">
+                            <i class="fas fa-chart-pie me-2"></i>Distribución de Cuotas
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="cuotasChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="m-0 font-weight-bold">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Alertas Importantes
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${totalVencidas > 0}" class="alert alert-danger mb-3" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong th:text="${totalVencidas}">0</strong> cuotas vencidas requieren atención
+                        </div>
+                        <div th:if="${totalPendientes > 0}" class="alert alert-warning mb-3" role="alert">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong th:text="${totalPendientes}">0</strong> cuotas pendientes de pago
+                        </div>
+                        <div th:if="${totalPagadas > 0}" class="alert alert-success mb-0" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong th:text="${totalPagadas}">0</strong> cuotas pagadas correctamente
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h6 class="m-0 font-weight-bold">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Cuotas Vencidas - Acción Requerida
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID Cuota</th>
+                                        <th>Cliente</th>
+                                        <th>Número Cuota</th>
+                                        <th>Valor</th>
+                                        <th>Fecha Vencimiento</th>
+                                        <th>Días Vencidos</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="cuota : ${cuotasVencidas}">
+                                        <td th:text="${cuota.idCuota}"></td>
+                                        <td th:text="${cuota.cliente.nombre}"></td>
+                                        <td>
+                                            <span class="badge bg-info" th:text="'Cuota ' + ${cuota.numeroCuota}"></span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-danger" th:text="'$' + ${#numbers.formatDecimal(cuota.valorCuota, 0, 'COMMA', 2, 'POINT')}"></span>
+                                        </td>
+                                        <td th:text="${#temporals.format(cuota.fechaVencimiento, 'dd/MM/yyyy')}"></td>
+                                        <td>
+                                            <span class="badge bg-danger" th:text="${#temporals.daysBetween(cuota.fechaVencimiento, #temporals.createNow())} + ' días'"></span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <form th:action="@{/cuotas/pagar/{id}(id=${cuota.idCuota})}" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-success btn-sm" title="Marcar como Pagada"
+                                                            onclick="return confirm('¿Confirmar el pago de esta cuota?')">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                                <a th:href="@{/cuotas/editar/{id}(id=${cuota.idCuota})}" 
+                                                   class="btn btn-outline-primary btn-sm" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <div th:if="${#lists.isEmpty(cuotasVencidas)}" class="text-center py-4">
+                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                <h5 class="text-success">¡Excelente!</h5>
+                                <p class="text-muted">No hay cuotas vencidas en este momento</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="m-0 font-weight-bold">
+                            <i class="fas fa-clock me-2"></i>Cuotas Pendientes
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID Cuota</th>
+                                        <th>Cliente</th>
+                                        <th>Número Cuota</th>
+                                        <th>Valor</th>
+                                        <th>Fecha Vencimiento</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="cuota : ${cuotasPendientes}">
+                                        <td th:text="${cuota.idCuota}"></td>
+                                        <td th:text="${cuota.cliente.nombre}"></td>
+                                        <td>
+                                            <span class="badge bg-info" th:text="'Cuota ' + ${cuota.numeroCuota}"></span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-warning" th:text="'$' + ${#numbers.formatDecimal(cuota.valorCuota, 0, 'COMMA', 2, 'POINT')}"></span>
+                                        </td>
+                                        <td th:text="${#temporals.format(cuota.fechaVencimiento, 'dd/MM/yyyy')}"></td>
+                                        <td>
+                                            <span class="badge bg-warning" th:text="${cuota.estadoCuota}"></span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <form th:action="@{/cuotas/pagar/{id}(id=${cuota.idCuota})}" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-success btn-sm" title="Marcar como Pagada"
+                                                            onclick="return confirm('¿Confirmar el pago de esta cuota?')">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                                <a th:href="@{/cuotas/editar/{id}(id=${cuota.idCuota})}" 
+                                                   class="btn btn-outline-primary btn-sm" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <div th:if="${#lists.isEmpty(cuotasPendientes)}" class="text-center py-4">
+                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                <h5 class="text-success">¡Perfecto!</h5>
+                                <p class="text-muted">No hay cuotas pendientes en este momento</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const ctx = document.getElementById('cuotasChart').getContext('2d');
+        const cuotasChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pagadas', 'Pendientes', 'Vencidas'],
+                datasets: [{
+                    data: [
+                        /*[[${totalPagadas}]]*/ 0,
+                        /*[[${totalPendientes}]]*/ 0,
+                        /*[[${totalVencidas}]]*/ 0
+                    ],
+                    backgroundColor: [
+                        '#28a745',
+                        '#ffc107',
+                        '#dc3545'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#2d2d2d'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#ffffff',
+                            padding: 20
+                        }
+                    }
+                }
+            }
+        });
+
+        setInterval(function() {
+            const alertElements = document.querySelectorAll('.alert');
+            alertElements.forEach(function(alert) {
+                if (alert.classList.contains('alert-danger')) {
+                    alert.style.animation = 'pulse 2s infinite';
+                }
+            });
+        }, 1000);
+    </script>
+
+    <style>
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .card {
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</body>
+</html>

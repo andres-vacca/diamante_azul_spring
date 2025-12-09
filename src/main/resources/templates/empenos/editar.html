@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar/Renovar Empeno</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="mb-4">Editar y Renovar Empeno ID: <span th:text="${empeno.id}"></span></h2>
+
+    <form th:action="@{/empenos/actualizar/{id}(id=${empeno.id})}"
+          th:object="${empeno}"
+          method="post">
+
+        <input type="hidden" th:field="*{id}">
+        <input type="hidden" th:field="*{producto.id}">
+
+        <div class="mb-3">
+            <label class="form-label">Producto Empenado</label>
+            <input type="text"
+                   class="form-control"
+                   th:value="${empeno.producto.nombre}"
+                   readonly>
+        </div>
+
+        <div class="mb-3">
+            <label for="montoPrestado" class="form-label">Monto Prestado ($)</label>
+            <input type="number"
+                   step="0.01"
+                   id="montoPrestado"
+                   th:field="*{montoPrestado}"
+                   class="form-control"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label for="tasaInteres" class="form-label">Tasa de Interes (%)</label>
+            <input type="number"
+                   step="0.01"
+                   id="tasaInteres"
+                   th:field="*{tasaInteres}"
+                   class="form-control"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label for="fechaVencimiento" class="form-label">Nueva Fecha de Vencimiento (Renovacion)</label>
+            <input type="date"
+                   id="fechaVencimiento"
+                   th:field="*{fechaVencimiento}"
+                   class="form-control"
+                   required>
+            <div class="form-text">Si se renueva, actualice esta fecha.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="estadoEmpeno" class="form-label">Estado</label>
+            <select id="estadoEmpeno"
+                    th:field="*{estadoEmpeno}"
+                    class="form-select"
+                    required>
+                <option value="ACTIVO">ACTIVO</option>
+                <option value="VENCIDO">VENCIDO</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar Cambios/Renovar</button>
+        <a th:href="@{/empenos/lista}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+</body>
+</html>
