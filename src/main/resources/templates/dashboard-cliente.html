@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Cliente - Diamante Azul</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; font-size: 0.9rem; }
+
+        /* SIDEBAR */
+        .sidebar {
+            height: 100vh; width: 240px; position: fixed; top: 0; left: 0;
+            background: #212529; color: white; padding-top: 70px; z-index: 900;
+            transition: 0.3s;
+        }
+        .sidebar a {
+            padding: 15px 20px; display: block; color: #adb5bd; text-decoration: none; border-left: 4px solid transparent; cursor: pointer;
+        }
+        .sidebar a:hover { background: #343a40; color: white; }
+        .sidebar a.active { background: #343a40; color: #0dcaf0; border-left-color: #0dcaf0; } /* Azul cian para Cliente */
+
+        /* HEADER */
+        .navbar-custom {
+            height: 60px; position: fixed; top: 0; left: 0; right: 0;
+            background: #0dcaf0; z-index: 1000; padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .navbar-custom .fw-bold { color: #212529; }
+
+        /* CONTENIDO */
+        .content { margin-left: 240px; margin-top: 60px; padding: 30px; transition: 0.3s; }
+        .section-view { display: none !important; }
+        .section-view.active { display: block !important; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media(max-width: 768px) {
+            .sidebar { left: -240px; }
+            .sidebar.active { left: 0; }
+            .content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar-custom">
+    <div class="d-flex align-items-center">
+        <button class="btn text-dark d-md-none me-2" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <span class="fw-bold fs-5"><i class="fas fa-gem me-2"></i>Diamante Azul (Cliente)</span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <span class="d-none d-sm-inline text-dark fw-bold" th:text="${usuario_nombre}">Cliente</span>
+        <form th:action="@{/logout}" method="post" class="m-0">
+            <button class="btn btn-sm btn-outline-dark">Salir</button>
+        </form>
+    </div>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <a onclick="showSection('dashboard', this)" class="active"><i class="fas fa-home me-2"></i>Mi Resumen</a>
+    <a onclick="showSection('empenos', this)"><i class="fas fa-hand-holding-usd me-2"></i>Mis Empeños</a>
+    <a onclick="showSection('cuotas', this)"><i class="fas fa-file-invoice-dollar me-2"></i>Mis Pagos</a>
+    <div style="border-top: 1px solid #444; margin: 10px 0;"></div>
+    <a href="#"><i class="fas fa-user-cog me-2"></i>Mi Perfil</a>
+</div>
+
+<div class="content">
+
+    <div id="dashboard-section" class="section-view active">
+        <h4 class="mb-4">Bienvenido</h4>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card bg-info text-white p-3 shadow-sm border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="fw-bold" th:text="${totalEmpenos}">0</h3>
+                            <p class="mb-0 text-dark">Empeños Activos</p>
+                        </div>
+                        <i class="fas fa-hand-holding-usd fa-3x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-warning text-dark p-3 shadow-sm border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="fw-bold" th:text="${cuotasPendientes}">0</h3>
+                            <p class="mb-0">Cuotas Pendientes</p>
+                        </div>
+                        <i class="fas fa-exclamation-circle fa-3x opacity-25"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="empenos-section" class="section-view">
+        <h4 class="mb-3">Mis Empeños</h4>
+        <div class="card p-3 shadow-sm border-0">
+            <input type="text" id="buscarEmpenos" class="form-control form-control-sm mb-3"
+                   placeholder="Buscar por ID o nombre de producto..."
+                   onkeyup="buscar('empenos', this.value)">
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto</th>
+                        <th>Monto Prestado</th>
+                        <th>Fecha Vencimiento</th>
+                        <th>Estado</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tablaEmpenosBody">
+                    <tr th:each="e : ${empenos}">
+                        <td th:text="${e.id}" class="fw-bold text-primary"></td>
+                        <td th:text="${e.producto?.nombre}"></td>
+                        <td th:text="'$ ' + ${e.montoPrestado}"></td>
+                        <td th:text="${e.fechaVencimiento}"></td>
+                        <td>
+                                <span th:class="${'badge ' + (e.estadoEmpeno == 'ACTIVO' ? 'bg-success' : 'bg-secondary')}"
+                                      th:text="${e.estadoEmpeno}">
+                                </span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(empenos)}" class="no-records-empenos">
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="fas fa-folder-open me-2"></i> No tienes empeños registrados.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="cuotas-section" class="section-view">
+        <h4 class="mb-3">Historial de Pagos y Cuotas</h4>
+        <div class="card p-3 shadow-sm border-0">
+            <input type="text" id="buscarCuotas" class="form-control form-control-sm mb-3"
+                   placeholder="Buscar por N° Empeño, ID o nombre de producto..."
+                   onkeyup="buscar('cuotas', this.value)">
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>N° Cuota</th>
+                        <th>Empeño Ref</th>
+                        <th>Valor Cuota</th>
+                        <th>Vencimiento</th>
+                        <th>Estado</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tablaCuotasBody">
+                    <tr th:each="c : ${cuotas}">
+                        <td th:text="${c.numeroCuota}" class="text-center"></td>
+                        <td>
+                            <span class="badge bg-light text-dark border" th:text="'#'+${c.empeno?.id}"></span>
+                            <span class="small ms-1" th:text="${c.empeno?.producto?.nombre}"></span>
+                        </td>
+                        <td th:text="'$ ' + ${c.valorCuota}" class="fw-bold"></td>
+                        <td th:text="${c.fechaVencimiento}"></td>
+                        <td>
+                                <span th:class="${'badge ' + (c.estadoCuota == 'PAGADA' ? 'bg-success' : (c.estadoCuota == 'VENCIDA' ? 'bg-danger' : 'bg-warning text-dark'))}"
+                                      th:text="${c.estadoCuota}">
+                                </span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(cuotas)}" class="no-records-cuotas">
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="fas fa-file-invoice-dollar me-2"></i> No hay registros de cuotas.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Navegación simple
+    function showSection(id, btn) {
+        document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+        document.getElementById(id+'-section').classList.add('active');
+        document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        if(window.innerWidth < 768) document.getElementById('sidebar').classList.remove('active');
+    }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+
+    // Función de Búsqueda/Filtrado en el Frontend (JavaScript)
+    function buscar(tipo, query) {
+        const filter = query.toUpperCase();
+        let tableId;
+
+        if (tipo === 'empenos') {
+            tableId = 'tablaEmpenosBody';
+        } else if (tipo === 'cuotas') {
+            tableId = 'tablaCuotasBody';
+        } else {
+            return;
+        }
+
+        const rows = document.getElementById(tableId).getElementsByTagName('tr');
+        let found = false;
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+
+            // Ignorar la fila de "No hay registros" si existe
+            if (row.classList.contains('no-records-' + tipo)) {
+                row.style.display = 'none';
+                continue;
+            }
+
+            // El innerText contiene todos los datos de la fila (ID, Producto, Monto, etc.)
+            const rowText = row.innerText.toUpperCase();
+
+            if (rowText.includes(filter)) {
+                row.style.display = ''; // Mostrar fila
+                found = true;
+            } else {
+                row.style.display = 'none'; // Ocultar fila
+            }
+        }
+
+        // Manejar el mensaje "No hay registros" cuando el filtro no encuentra nada
+        const noRecordsRow = document.querySelector('.no-records-' + tipo);
+        if (noRecordsRow) {
+            // Mostrar la fila de "No hay registros" solo si no se encontraron resultados Y la consulta no está vacía
+            if (!found && filter !== '') {
+                noRecordsRow.style.display = '';
+            } else {
+                // Ocultarla si hay resultados o si la consulta está vacía (Thymeleaf ya maneja el estado inicial vacío)
+                noRecordsRow.style.display = 'none';
+            }
+        }
+    }
+</script>
+
+</body>
+</html>

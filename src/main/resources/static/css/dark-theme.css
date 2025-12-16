@@ -1,0 +1,123 @@
+/* DIAMANTE AZUL - SISTEMA DE TEMAS (Corregido) */
+
+/* 1. Variables por defecto (MODO CLARO) */
+:root {
+    --bg-primary: #f8f9fc;       /* Fondo claro */
+    --bg-secondary: #ffffff;     /* Fondo tarjetas blanco */
+    --bg-tertiary: #eaecf4;      /* Fondo inputs/bordes */
+
+    --text-primary: #5a5c69;     /* Texto principal oscuro */
+    --text-secondary: #858796;   /* Texto secundario gris */
+    --text-muted: #858796;
+
+    --border-color: #e3e6f0;
+
+    --accent-blue: #4e73df;
+    --accent-success: #1cc88a;
+    --accent-warning: #f6c23e;
+    --accent-danger: #e74a3b;
+    --accent-info: #36b9cc;
+
+    --shadow-dark: rgba(0, 0, 0, 0.15);
+    --gradient-primary: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+}
+
+/* 2. Variables para MODO OSCURO (Sobrescriben las anteriores) */
+[data-theme="dark"] {
+    --bg-primary: #121212;       /* Fondo muy oscuro */
+    --bg-secondary: #1e1e1e;     /* Tarjetas gris oscuro */
+    --bg-tertiary: #2d2d2d;      /* Inputs gris medio */
+
+    --text-primary: #e0e0e0;     /* Texto principal claro */
+    --text-secondary: #b0b0b0;   /* Texto secundario gris claro */
+    --text-muted: #888888;
+
+    --border-color: #444444;
+
+    --shadow-dark: rgba(0, 0, 0, 0.5);
+}
+
+/* 3. APLICACIÓN DE VARIABLES */
+
+body {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Navbar */
+.navbar-dark {
+    background-color: var(--accent-blue) !important; /* Siempre azul en ambos modos para admin */
+}
+[data-theme="dark"] .navbar-dark {
+    background-color: #1a1a1a !important; /* O negro en modo oscuro si prefieres */
+}
+
+/* Cards */
+.card {
+    background-color: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.card-header {
+    background-color: var(--bg-primary) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.card-body {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Sidebar */
+.sidebar, .dashboard-sidebar {
+    background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+}
+[data-theme="dark"] .sidebar,
+[data-theme="dark"] .dashboard-sidebar {
+    background: linear-gradient(180deg, #1a1a1a 0%, #000000 100%) !important;
+}
+
+.nav-link {
+    color: rgba(255,255,255,0.8) !important; /* En sidebar siempre blanco/claro */
+}
+.nav-link:hover {
+    color: #fff !important;
+}
+
+/* Formularios */
+.form-control, .form-select {
+    background-color: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--accent-blue) !important;
+}
+
+/* Tablas */
+.table {
+    color: var(--text-primary) !important;
+}
+.table thead th {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+.table td {
+    border-color: var(--border-color) !important;
+}
+.table-hover tbody tr:hover {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Textos específicos que causaban problemas */
+.text-gray-800 {
+    color: var(--text-primary) !important; /* Ahora se adapta */
+}

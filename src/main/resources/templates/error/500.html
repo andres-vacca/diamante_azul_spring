@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error 500 - Error Interno del Servidor</title>
+    <!-- Bootstrap y Font Awesome (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- CSS INTEGRADO (Estilos base del proyecto) -->
+    <style>
+        /* Variables de color y tema */
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #858796;
+            --danger-color: #e74a3b;
+            --light-color: #f8f9fc;
+            --dark-color: #5a5c69;
+            --white: #ffffff;
+            --border-radius: 0.5rem;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        [data-theme="dark"] {
+            --light-color: #1a1a1a;
+            --dark-color: #adb5bd;
+            --white: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-muted: #888888;
+            --border-color: #444444;
+        }
+
+        /* Estilos base */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+            transition: all 0.3s ease-in-out;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        [data-theme="dark"] body {
+            background-color: var(--light-color);
+            color: var(--text-primary);
+        }
+
+        /* Contenedor del Error */
+        .error-container {
+            max-width: 800px;
+            text-align: center;
+            padding: 2rem;
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .error-container {
+            background-color: var(--white);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+        }
+
+        /* Título del error */
+        .error-code {
+            font-size: 8rem;
+            font-weight: 900;
+            color: var(--danger-color);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            text-shadow: 4px 4px 0 rgba(231, 74, 59, 0.2);
+        }
+
+        .error-message {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+        }
+
+        [data-theme="dark"] .error-message {
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+             transform: translateY(-2px);
+             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .details-box {
+            background-color: #f1f2f6;
+            text-align: left;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-top: 1.5rem;
+            border: 1px solid #dee2e6;
+            overflow-x: auto;
+        }
+
+        [data-theme="dark"] .details-box {
+            background-color: #3a3a3a;
+            border: 1px solid var(--border-color);
+        }
+
+        .details-box pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.8rem;
+            color: #333;
+        }
+
+        [data-theme="dark"] .details-box pre {
+            color: #ccc;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="error-container">
+    <p class="error-code">500</p>
+    <h1 class="error-message">Error Interno del Servidor</h1>
+    <p class="text-muted mb-4">
+        Ha ocurrido un problema inesperado en el servidor. Hemos sido notificados.
+        Por favor, inténtelo de nuevo más tarde o contacte con soporte si el problema persiste.
+    </p>
+
+    <!-- Detalles del Error (Solo si estamos en desarrollo o debug) -->
+    <!-- Se recomienda usar 'application.properties' o 'application.yml' para controlar si se muestra 'trace' o no. -->
+    <div th:if="${trace != null}" class="details-box">
+        <h5 class="text-danger mb-3"><i class="fas fa-bug me-2"></i>Detalles Técnicos del Error (Desarrollo)</h5>
+        <p class="small mb-1"><strong>Ruta:</strong> <code th:text="${path}"></code></p>
+        <p class="small mb-1"><strong>Timestamp:</strong> <code th:text="${timestamp}"></code></p>
+        <p class="small mb-1"><strong>Mensaje:</strong> <code th:text="${message}"></code></p>
+        <p class="small mb-1"><strong>Error:</strong> <code th:text="${error}"></code></p>
+        <hr/>
+        <pre class="text-start" th:text="${trace}"></pre>
+    </div>
+
+    <div class="mt-4">
+        <a th:href="@{/}" class="btn btn-primary">
+            <i class="fas fa-home me-2"></i>Ir a la Página de Inicio
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
